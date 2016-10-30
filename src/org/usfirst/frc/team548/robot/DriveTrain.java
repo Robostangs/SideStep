@@ -20,13 +20,13 @@ public class DriveTrain {
 
 	private DriveTrain() {
 		bigBird = new Module(Constants.DT_BB_DRIVE_TALON_ID,
-				Constants.DT_BB_TURN_TALON_ID, 4, 0.01, 0, 200);// Bottom right
+				Constants.DT_BB_TURN_TALON_ID, 4.2, 0.01, 0, 200);// Bottom right
 		bigHorse = new Module(Constants.DT_BH_DRIVE_TALON_ID,
-				Constants.DT_BH_TURN_TALON_ID, 4, 0.01, 0, 200); // Top left
+				Constants.DT_BH_TURN_TALON_ID, 4.2, 0.01, 0, 200); // Top left
 		bigGiraffe = new Module(Constants.DT_BG_DRIVE_TALON_ID,
-				Constants.DT_BG_TURN_TALON_ID, 4, 0.01, 0, 200); // Top right
+				Constants.DT_BG_TURN_TALON_ID, 4.2, 0.01, 0, 200); // Top right
 		bigSushi = new Module(Constants.DT_BS_DRIVE_TALON_ID,
-				Constants.DT_BS_TURN_TALON_ID, 4, 0.01, 0, 200); // Bottom left
+				Constants.DT_BS_TURN_TALON_ID, 4.2, 0.01, 0, 200); // Bottom left
 
 		hyro = new AHRS(SPI.Port.kMXP);
 	}
@@ -101,21 +101,23 @@ public class DriveTrain {
 			ws4 /= max;
 		}
 		
-		if (Math.abs(fwd) < .2 && Math.abs(str) < .2) {
+		if (Math.abs(fwd) < .15 && Math.abs(str) < .15 && Math.abs(rot) < .15) {
 			wa1 = lasta1;
 			wa2 = lasta2;
 			wa3 = lasta3;
 			wa4 = lasta4;
-			str = 0;
+			//rot = 0;
+			stopDrive();
 		} else {
 			lasta1 = wa1;
 			lasta2 = wa2;
 			lasta3 = wa3;
 			lasta4 = wa4;
+			DriveTrain.setDrivePower(ws4, ws2, ws1, ws3);
 		}
 		DriveTrain.setLocation(angleToLoc(wa4), angleToLoc(wa2),
 				angleToLoc(wa1), angleToLoc(wa3));
-		DriveTrain.setDrivePower(ws4, ws2, ws1, ws3);
+		
 //		SmartDashboard.putNumber("Wheel loc", angleToLoc(wa1));
 //		SmartDashboard.putNumber("Wheel Angle", wa1);
 //		SmartDashboard.putNumber("Wheel Speed", ws1);

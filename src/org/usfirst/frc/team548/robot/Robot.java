@@ -19,7 +19,7 @@ public class Robot extends IterativeRobot {
     }
 
     public void autonomousPeriodic() {
-    	
+    	DriveTrain.setAllLocation(0);
     }
     
    
