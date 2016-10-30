@@ -9,17 +9,17 @@ public class Constants {
 	//Big Bird
 	public final static int DT_BB_DRIVE_TALON_ID = 2;
 	public final static int DT_BB_TURN_TALON_ID = 1;
-	public final static double DT_BB_ABS_ZERO = .6729;
+	public final static double DT_BB_ABS_ZERO = 0.671875;
 	//Big Horse
 	public final static int DT_BH_DRIVE_TALON_ID = 6;
 	public final static int DT_BH_TURN_TALON_ID = 5;
-	public final static double DT_BH_ABS_ZERO = .9885;
+	public final static double DT_BH_ABS_ZERO = 0.989990234375;
 	//Big Giraffe
 	public final static int DT_BG_DRIVE_TALON_ID = 4;
 	public final static int DT_BG_TURN_TALON_ID = 3;
-	public final static double DT_BG_ABS_ZERO = .2429;
+	public final static double DT_BG_ABS_ZERO = 0.240478515625;
 	//Big Sushi
 	public final static int DT_BS_DRIVE_TALON_ID = 7;
 	public final static int DT_BS_TURN_TALON_ID = 8;
-	public final static double DT_BS_ABS_ZERO = .81127;
+	public final static double DT_BS_ABS_ZERO = 0.81640625;
 }

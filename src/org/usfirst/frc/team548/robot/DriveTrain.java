@@ -72,7 +72,7 @@ public class DriveTrain {
 
 	private static double lasta1 = 0, lasta2 = 0, lasta3 = 0, lasta4 = 0;
 	public static void humanDrive(double fwd, double str, double rot) {
-		if (Math.abs(rot) < .15)
+		if (Math.abs(rot) < 0.01)
 			rot = 0;
 		
 		double a = str - (rot * (l / r));
@@ -101,11 +101,11 @@ public class DriveTrain {
 			ws4 /= max;
 		}
 		
-		if (Math.abs(fwd) < .15 && Math.abs(str) < .15 && Math.abs(rot) < .15) {
-			wa1 = lasta1;
-			wa2 = lasta2;
-			wa3 = lasta3;
-			wa4 = lasta4;
+		if (Math.abs(fwd) < .15 && Math.abs(str) < .15 && Math.abs(rot) < 0.01) {
+//			wa1 = lasta1;
+//			wa2 = lasta2;
+//			wa3 = lasta3;
+//			wa4 = lasta4;
 			//rot = 0;
 			stopDrive();
 		} else {
@@ -113,8 +113,9 @@ public class DriveTrain {
 			lasta2 = wa2;
 			lasta3 = wa3;
 			lasta4 = wa4;
-			DriveTrain.setDrivePower(ws4, ws2, ws1, ws3);
+			
 		}
+		DriveTrain.setDrivePower(ws4, ws2, ws1, ws3);
 		DriveTrain.setLocation(angleToLoc(wa4), angleToLoc(wa2),
 				angleToLoc(wa1), angleToLoc(wa3));
 		

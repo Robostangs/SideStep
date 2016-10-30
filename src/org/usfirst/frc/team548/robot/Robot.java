@@ -20,6 +20,7 @@ public class Robot extends IterativeRobot {
 
     public void autonomousPeriodic() {
     	DriveTrain.setAllLocation(0);
+    	DriveTrain.stopDrive();
     }
     
    
@@ -29,7 +30,7 @@ public class Robot extends IterativeRobot {
   
     public void teleopPeriodic() {    	
     	//DriveTrain.humanDrive(xbox.getLeftStickYAxis(), xbox.getLeftStickXAxis(), xbox.getRightStickXAxis());
-    	DriveTrain.fieldCentricDrive(xbox.getLeftStickYAxis(), xbox.getLeftStickXAxis(), xbox.getTriggers());
+    	DriveTrain.fieldCentricDrive(xbox.getLeftStickYAxis(), xbox.getLeftStickXAxis(), Math.pow(xbox.getRightStickXAxis(), 3));
     	SmartDashboard.putBoolean("Big Bird Turn Encoder", DriveTrain.isBigBirdTurnEncConnected());
     	SmartDashboard.putBoolean("Big Horse Turn Encoder", DriveTrain.isBigHorseTurnEncConnected());
     	SmartDashboard.putBoolean("Big Giraffe Turn Encoder", DriveTrain.isBigGiraffeTurnEncConnected());
