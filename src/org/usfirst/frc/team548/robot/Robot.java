@@ -35,6 +35,7 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putBoolean("Big Horse Turn Encoder", DriveTrain.isBigHorseTurnEncConnected());
     	SmartDashboard.putBoolean("Big Giraffe Turn Encoder", DriveTrain.isBigGiraffeTurnEncConnected());
     	SmartDashboard.putBoolean("Big Sushi Turn Encoder", DriveTrain.isBigSushiTurnEncConnected());
+    	//SmartDashboard.putNumber("KEY", DriveTrain.bigSushi.getTurnEncPos());
     	SmartDashboard.putNumber("Hyro", DriveTrain.getHyroAngle());
     }
     
