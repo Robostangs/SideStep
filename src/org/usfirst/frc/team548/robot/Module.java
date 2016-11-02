@@ -131,7 +131,7 @@ public class Module {
 			} else if ((base + (loc * FULL_ROTATION)) - getTurnEncPos() > FULL_ROTATION/2) {
 				base -= FULL_ROTATION;
 			}
-			turn.set((((loc * FULL_ROTATION) + (base))));
+			turn.set((((loc * FULL_ROTATION) + (base)))+OFFSET);
 			//SmartDashboard.putNumber("Error", (base + (loc * FULL_ROTATION))- getTurnEncPos());
 			
 		} else {
@@ -140,7 +140,7 @@ public class Module {
 			} else if ((base -((1-loc) * FULL_ROTATION)) - getTurnEncPos() > FULL_ROTATION/2) {
 				base -= FULL_ROTATION;
 			}
-			turn.set((base- (((1-loc) * FULL_ROTATION))));
+			turn.set((base- (((1-loc) * FULL_ROTATION)))+OFFSET);
 			//SmartDashboard.putNumber("Error", (base - ((1-loc) * FULL_ROTATION))- getTurnEncPos());
 			
 		}
