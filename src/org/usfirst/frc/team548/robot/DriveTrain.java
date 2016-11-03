@@ -3,8 +3,6 @@ package org.usfirst.frc.team548.robot;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.Utility;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class DriveTrain {
 
@@ -20,13 +18,13 @@ public class DriveTrain {
 
 	private DriveTrain() {
 		bigBird = new Module(Constants.DT_BB_DRIVE_TALON_ID,
-				Constants.DT_BB_TURN_TALON_ID, 4.2, 0.01, 0, 200);// Bottom right
+				Constants.DT_BB_TURN_TALON_ID, 4.20, 0.01, 0, 200);// Bottom right
 		bigHorse = new Module(Constants.DT_BH_DRIVE_TALON_ID,
-				Constants.DT_BH_TURN_TALON_ID, 4.2, 0.01, 0, 200); // Top left
+				Constants.DT_BH_TURN_TALON_ID, 4.20, 0.01, 0, 200); // Top left
 		bigGiraffe = new Module(Constants.DT_BG_DRIVE_TALON_ID,
-				Constants.DT_BG_TURN_TALON_ID, 4.2, 0.01, 0, 200); // Top right
+				Constants.DT_BG_TURN_TALON_ID, 4.20, 0.01, 0, 200); // Top right
 		bigSushi = new Module(Constants.DT_BS_DRIVE_TALON_ID,
-				Constants.DT_BS_TURN_TALON_ID, 4.2, 0.01, 0, 200); // Bottom left
+				Constants.DT_BS_TURN_TALON_ID, 4.20, 0.01, 0, 200); // Bottom left
 
 		hyro = new AHRS(SPI.Port.kMXP);
 	}
@@ -102,22 +100,15 @@ public class DriveTrain {
 		}
 		
 		if (Math.abs(fwd) < .15 && Math.abs(str) < .15 && Math.abs(rot) < 0.01) {
-//			wa1 = lasta1;
-//			wa2 = lasta2;
-//			wa3 = lasta3;
-//			wa4 = lasta4;
-			//rot = 0;
+			setOffSets();
 			stopDrive();
 		} else {
-			lasta1 = wa1;
-			lasta2 = wa2;
-			lasta3 = wa3;
-			lasta4 = wa4;
-			
+			resetOffSet();
+			DriveTrain.setDrivePower(ws4, ws2, ws1, ws3);
+			DriveTrain.setLocation(angleToLoc(wa4), angleToLoc(wa2),
+					angleToLoc(wa1), angleToLoc(wa3));
 		}
-		DriveTrain.setDrivePower(ws4, ws2, ws1, ws3);
-		DriveTrain.setLocation(angleToLoc(wa4), angleToLoc(wa2),
-				angleToLoc(wa1), angleToLoc(wa3));
+		
 		
 //		SmartDashboard.putNumber("Wheel loc", angleToLoc(wa1));
 //		SmartDashboard.putNumber("Wheel Angle", wa1);
@@ -175,35 +166,47 @@ public class DriveTrain {
 	private static boolean offSetSet = false;
 
 	public static void setOffSets() {
-		if (Math.abs(DriveTrain.bigBird.getAbsPos()) > 1
-				|| Math.abs(DriveTrain.bigHorse.getAbsPos()) > 1
-				|| Math.abs(DriveTrain.bigGiraffe.getAbsPos()) > 1
-				|| Math.abs(DriveTrain.bigSushi.getAbsPos()) > 1) {
-			changeAllToQual();
-			return;
-		} else {
+		if(!offSetSet) {
 			double bbOff = 0, bhOff = 0, bgOff = 0, bsOff = 0;
-			if (!offSetSet && DriveTrain.bigBird.getAbsPos() != 0
-					&& DriveTrain.bigHorse.getAbsPos() != 0
-					&& DriveTrain.bigGiraffe.getAbsPos() != 0
-					&& DriveTrain.bigSushi.getAbsPos() != 0) {
-				bbOff = DriveTrain.bigBird.getAbsPos();
-				bhOff = DriveTrain.bigHorse.getAbsPos();
-				bgOff = DriveTrain.bigGiraffe.getAbsPos();
-				bsOff = DriveTrain.bigSushi.getAbsPos();
+			bigBird.setTurnPower(0);
+			bigGiraffe.setTurnPower(0);
+			bigHorse.setTurnPower(0);
+			bigSushi.setTurnPower(0);
+			changeAllToAbs();
+			if (DriveTrain.bigBird.getAbsPos() != 0 && DriveTrain.bigHorse.getAbsPos() != 0 && DriveTrain.bigGiraffe.getAbsPos() != 0 && DriveTrain.bigSushi.getAbsPos() != 0) {
+				bbOff = absToLoc(DriveTrain.bigBird.getAbsPos());
+				bhOff = absToLoc(DriveTrain.bigHorse.getAbsPos());
+				bgOff = absToLoc(DriveTrain.bigGiraffe.getAbsPos());
+				bsOff = absToLoc(DriveTrain.bigSushi.getAbsPos());
+				
 				System.out.println("BBoff: " + bbOff);
 				System.out.println("BHoff: " + bhOff);
 				System.out.println("BGoff: " + bgOff);
 				System.out.println("BSoff: " + bsOff);
+				
 				changeAllToQual();
+				
 				bigBird.setEncPos((int) (weirdSub(bbOff, Constants.DT_BB_ABS_ZERO) * 4095d));
 				bigHorse.setEncPos((int) (weirdSub(bhOff, Constants.DT_BH_ABS_ZERO) * 4095d));
 				bigGiraffe.setEncPos((int) (weirdSub(bgOff, Constants.DT_BG_ABS_ZERO) * 4095d));
 				bigSushi.setEncPos((int) (weirdSub(bsOff, Constants.DT_BS_ABS_ZERO) * 4095d));
 				offSetSet = true;
+			} else {
+				System.out.println("ERROR IN OFFSETS");
 			}
-			
+		} 
+	}
+	
+	private static double absToLoc(double v) {
+		if(v > 0) {
+			return v-((int)v);
+		} else {
+			return Math.abs((((int)v)-1d) - v); 
 		}
+	}
+	
+	public static void resetOffSet() {
+		offSetSet = false;
 	}
 
 	public static void changeAllToQual() {
@@ -211,6 +214,13 @@ public class DriveTrain {
 		bigHorse.setFeedBackToQual();
 		bigGiraffe.setFeedBackToQual();
 		bigSushi.setFeedBackToQual();
+	}
+	
+	public static void changeAllToAbs() {
+		bigBird.setFeedBackToAbs();
+		bigHorse.setFeedBackToAbs();
+		bigGiraffe.setFeedBackToAbs();
+		bigSushi.setFeedBackToAbs();
 	}
 
 	private static double weirdSub(double v, double c) {

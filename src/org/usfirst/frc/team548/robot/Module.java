@@ -1,13 +1,14 @@
 package org.usfirst.frc.team548.robot;
 
 import edu.wpi.first.wpilibj.CANTalon;
+import edu.wpi.first.wpilibj.CANSpeedController.ControlMode;
 import edu.wpi.first.wpilibj.CANTalon.FeedbackDevice;
 import edu.wpi.first.wpilibj.CANTalon.FeedbackDeviceStatus;
 import edu.wpi.first.wpilibj.CANTalon.TalonControlMode;
 
 public class Module {
 	private CANTalon drive, turn;
-	private final double FULL_ROTATION = 4095d, TURN_P, TURN_I, TURN_D;
+	private final double FULL_ROTATION = 4096d, TURN_P, TURN_I, TURN_D;
 	private final int TURN_IZONE;
 	
 	/**
@@ -39,7 +40,7 @@ public class Module {
 	 */
 	public void setTurnPower(double p) {
 		this.turn.changeControlMode(TalonControlMode.PercentVbus);
-		this.turn.set(p*.75);
+		this.turn.set(p);
 	}
 
 	/**
@@ -78,7 +79,7 @@ public class Module {
 	 * @return true if the encoder is connected
 	 */
 	public boolean isTurnEncConnected() {
-		return turn.isSensorPresent(FeedbackDevice.CtreMagEncoder_Relative) == FeedbackDeviceStatus.FeedbackStatusPresent;
+		return turn.isSensorPresent(FeedbackDevice.CtreMagEncoder_Absolute) == FeedbackDeviceStatus.FeedbackStatusPresent;
 	}
 	
 	public int getTurnRotations() {
@@ -145,4 +146,10 @@ public class Module {
 	public void setFeedBackToQual() {
 		turn.setFeedbackDevice(FeedbackDevice.QuadEncoder);
 	}
+	
+	public void setFeedBackToAbs() {
+		turn.setFeedbackDevice(FeedbackDevice.CtreMagEncoder_Absolute);
+	}
+	
+	
 }

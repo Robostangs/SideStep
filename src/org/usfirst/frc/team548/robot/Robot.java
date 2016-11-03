@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Robot extends IterativeRobot {
 
 	private XboxController xbox;
+	private boolean fun = true;
 	
     public void robotInit() {
       xbox = new XboxController(Constants.XBOX_PORT);
@@ -29,14 +30,18 @@ public class Robot extends IterativeRobot {
     }
   
     public void teleopPeriodic() {    	
-    	//DriveTrain.humanDrive(xbox.getLeftStickYAxis(), xbox.getLeftStickXAxis(), xbox.getRightStickXAxis());
-    	DriveTrain.fieldCentricDrive(xbox.getLeftStickYAxis(), xbox.getLeftStickXAxis(), Math.pow(xbox.getRightStickXAxis(), 3));
+    	 DriveTrain.fieldCentricDrive(xbox.getLeftStickYAxis(), xbox.getLeftStickXAxis(), Math.pow(xbox.getRightStickXAxis(), 3));
+//    	else DriveTrain.fieldCentricDrive(xbox.getLeftStickYAxis()*.75, xbox.getLeftStickXAxis()*.75, Math.pow(xbox.getRightStickXAxis()*.75, 3));
+//    	if(xbox.getXButton() && xbox.getLeftBumper()) fun = false;
+//    	else if(xbox.getStartButton()) fun = true;
+    	
     	SmartDashboard.putBoolean("Big Bird Turn Encoder", DriveTrain.isBigBirdTurnEncConnected());
     	SmartDashboard.putBoolean("Big Horse Turn Encoder", DriveTrain.isBigHorseTurnEncConnected());
     	SmartDashboard.putBoolean("Big Giraffe Turn Encoder", DriveTrain.isBigGiraffeTurnEncConnected());
     	SmartDashboard.putBoolean("Big Sushi Turn Encoder", DriveTrain.isBigSushiTurnEncConnected());
     	//SmartDashboard.putNumber("KEY", DriveTrain.bigSushi.getTurnEncPos());
     	SmartDashboard.putNumber("Hyro", DriveTrain.getHyroAngle());
+    	
     }
     
     public void testPeriodic() {
