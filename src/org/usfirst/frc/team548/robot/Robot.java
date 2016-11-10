@@ -48,7 +48,7 @@ public class Robot extends IterativeRobot {
     	SmartDashboard.putNumber("Avg. Error", DriveTrain.getAverageError());
     	xbox.setRightRumble(Math.pow(DriveTrain.getAverageError()/1300d, 2));
     	xbox.setLeftRumble((dt.isBrownedOut() ? 1 : 0));
-    	SmartDashboard.putNumber("Angle", changeAngle(xbox.getRightStickXAxis(), xbox.getRightStickYAxis()));
+    
     	//DriveTrain.resetOffSet();
     }
     

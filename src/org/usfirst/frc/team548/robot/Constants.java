@@ -22,4 +22,10 @@ public class Constants {
 	public final static int DT_BS_DRIVE_TALON_ID = 7;
 	public final static int DT_BS_TURN_TALON_ID = 8;
 	public final static double DT_BS_ABS_ZERO = 0.842041015625;
+	
+	//Rot PID .01, 0.0001, 0.008,
+	public final static double DT_ROT_PID_P = .01;
+	public final static double DT_ROT_PID_I =.0001;
+	public final static double DT_ROT_PID_D= .008;
+	public final static double DT_ROT_PID_IZONE = 18;
 }

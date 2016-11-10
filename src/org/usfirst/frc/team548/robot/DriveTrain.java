@@ -31,7 +31,7 @@ public class DriveTrain implements PIDOutput {
 				Constants.DT_BS_TURN_TALON_ID, 4.20, 0.01, 0, 200); // Bottom left
 
 		hyro = new AHRS(SPI.Port.kMXP);
-		pidControllerRot = new PIDController(.01, 0.0001, 0.008, hyro, this);
+		pidControllerRot = new PIDController(Constants.DT_ROT_PID_P, Constants.DT_ROT_PID_I, Constants.DT_ROT_PID_D, hyro, this);
 		pidControllerRot.setInputRange(-180.0f,  180.0f);
 		pidControllerRot.setOutputRange(-1.0, 1.0);
 		pidControllerRot.setContinuous(true);
@@ -81,87 +81,6 @@ public class DriveTrain implements PIDOutput {
 	private static final double l = 21, w = 21, r = Math
 			.sqrt((l * l) + (w * w));
 
-	private static double lasta1 = 0, lasta2 = 0, lasta3 = 0, lasta4 = 0;
-	
-	public static void swerveDrive(double fwd, double str, double rot) {
-		double a = str - (rot * (l / r));
-		double b = str + (rot * (l / r));
-		double c = fwd - (rot * (w / r));
-		double d = fwd + (rot * (w / r));
-
-		double ws1 = Math.sqrt((b * b) + (c * c));
-		double ws2 = Math.sqrt((b * b) + (d * d));
-		double ws3 = Math.sqrt((a * a) + (d * d));
-		double ws4 = Math.sqrt((a * a) + (c * c));
-
-		double wa1 = Math.atan2(b, c) * 180 / Math.PI;
-		double wa2 = Math.atan2(b, d) * 180 / Math.PI;
-		double wa3 = Math.atan2(a, d) * 180 / Math.PI;
-		double wa4 = Math.atan2(a, c) * 180 / Math.PI;
-
-		double max = ws1;
-		max = Math.max(max, ws2);
-		max = Math.max(max, ws3);
-		max = Math.max(max, ws4);
-		if (max > 1) {
-			ws1 /= max;
-			ws2 /= max;
-			ws3 /= max;
-			ws4 /= max;
-		}
-		DriveTrain.setDrivePower(ws4, ws2, ws1, ws3);
-		DriveTrain.setLocation(angleToLoc(wa4), angleToLoc(wa2), angleToLoc(wa1), angleToLoc(wa3));
-	}
-	
-	public static void humanDrive(double fwd, double str, double rot) {
-		if (Math.abs(rot) < 0.01) rot = 0;
-		
-		if (Math.abs(fwd) < .15 && Math.abs(str) < .15 && Math.abs(rot) < 0.01) {
-			//setOffSets();
-			setDriveBreakMode(true);
-			stopDrive();
-		} else {
-			setDriveBreakMode(false);
-			swerveDrive(fwd, str, rot);
-		}
-		
-		
-//		SmartDashboard.putNumber("Wheel loc", angleToLoc(wa1));
-//		SmartDashboard.putNumber("Wheel Angle", wa1);
-//		SmartDashboard.putNumber("Wheel Speed", ws1);
-
-	}
-	
-	public static void pidDrive(double fwd, double str, double angle) {
-		double temp = (fwd * Math.cos(getHyroAngleInRad()))
-				+ (str * Math.sin(getHyroAngleInRad()));
-		str = (-fwd * Math.sin(getHyroAngleInRad()))
-				+ (str * Math.cos(getHyroAngleInRad()));
-		fwd = temp;
-		if(!pidControllerRot.isEnabled()) pidControllerRot.enable();
-		if (Math.abs(fwd) < .15 && Math.abs(str) < .15) {
-			//setOffSets();
-			setDriveBreakMode(true);
-			//stopDrive();
-			pidFWD = 0;
-			pidSTR = 0;
-		} else {
-			setDriveBreakMode(false);
-			//swerveDrive(fwd, str, rotPID);
-			pidFWD = fwd;
-			pidSTR = str;
-		}
-		pidControllerRot.setSetpoint(angle);
-	}
-
-	public static void fieldCentricDrive(double fwd, double str, double rot) {
-		double temp = (fwd * Math.cos(getHyroAngleInRad()))
-				+ (str * Math.sin(getHyroAngleInRad()));
-		str = (-fwd * Math.sin(getHyroAngleInRad()))
-				+ (str * Math.cos(getHyroAngleInRad()));
-		fwd = temp;
-		humanDrive(fwd, str, rot);
-	}
 
 	public static boolean isBigBirdTurnEncConnected() {
 		return bigBird.isTurnEncConnected();
@@ -236,10 +155,6 @@ public class DriveTrain implements PIDOutput {
 		} 
 	}
 	
-	public static void tankDrive(double left, double right) {
-		setAllLocation(0);
-		setDrivePower(right, left, right, left);
-	}
 	
 	private static double absToLoc(double v) {
 		if(v > 0) {
@@ -294,9 +209,112 @@ public class DriveTrain implements PIDOutput {
 		return (Math.abs(bigBird.getError())+Math.abs(bigHorse.getError())+Math.abs(bigGiraffe.getError())+Math.abs(bigSushi.getError()))/4d;
 	}
 
+	/*
+	 * 
+	 * Drive methods
+	 * 
+	 */
+	public static void swerveDrive(double fwd, double str, double rot) {
+		double a = str - (rot * (l / r));
+		double b = str + (rot * (l / r));
+		double c = fwd - (rot * (w / r));
+		double d = fwd + (rot * (w / r));
+
+		double ws1 = Math.sqrt((b * b) + (c * c));
+		double ws2 = Math.sqrt((b * b) + (d * d));
+		double ws3 = Math.sqrt((a * a) + (d * d));
+		double ws4 = Math.sqrt((a * a) + (c * c));
+
+		double wa1 = Math.atan2(b, c) * 180 / Math.PI;
+		double wa2 = Math.atan2(b, d) * 180 / Math.PI;
+		double wa3 = Math.atan2(a, d) * 180 / Math.PI;
+		double wa4 = Math.atan2(a, c) * 180 / Math.PI;
+
+		double max = ws1;
+		max = Math.max(max, ws2);
+		max = Math.max(max, ws3);
+		max = Math.max(max, ws4);
+		if (max > 1) {
+			ws1 /= max;
+			ws2 /= max;
+			ws3 /= max;
+			ws4 /= max;
+		}
+		DriveTrain.setDrivePower(ws4, ws2, ws1, ws3);
+		DriveTrain.setLocation(angleToLoc(wa4), angleToLoc(wa2), angleToLoc(wa1), angleToLoc(wa3));
+	}
+	
+	public static void humanDrive(double fwd, double str, double rot) {
+		if (Math.abs(rot) < 0.01) rot = 0;
+		
+		if (Math.abs(fwd) < .15 && Math.abs(str) < .15 && Math.abs(rot) < 0.01) {
+			//setOffSets();
+			setDriveBreakMode(true);
+			stopDrive();
+		} else {
+			setDriveBreakMode(false);
+			swerveDrive(fwd, str, rot);
+		}
+		
+		
+//		SmartDashboard.putNumber("Wheel loc", angleToLoc(wa1));
+//		SmartDashboard.putNumber("Wheel Angle", wa1);
+//		SmartDashboard.putNumber("Wheel Speed", ws1);
+
+	}
+	
+		
+	public static void pidDrive(double fwd, double str, double angle) {
+		double temp = (fwd * Math.cos(getHyroAngleInRad()))
+				+ (str * Math.sin(getHyroAngleInRad()));
+		str = (-fwd * Math.sin(getHyroAngleInRad()))
+				+ (str * Math.cos(getHyroAngleInRad()));
+		fwd = temp;
+		if(!pidControllerRot.isEnabled()) pidControllerRot.enable();
+		if (Math.abs(fwd) < .15 && Math.abs(str) < .15) {
+			//setOffSets();
+			//setDriveBreakMode(true);
+			//stopDrive();
+			pidFWD = 0;
+			pidSTR = 0;
+		} else {
+			setDriveBreakMode(false);
+			//swerveDrive(fwd, str, rotPID);
+			pidFWD = fwd;
+			pidSTR = str;
+		}
+		pidControllerRot.setSetpoint(angle);
+	}
+
+	public static void fieldCentricDrive(double fwd, double str, double rot) {
+		double temp = (fwd * Math.cos(getHyroAngleInRad()))
+				+ (str * Math.sin(getHyroAngleInRad()));
+		str = (-fwd * Math.sin(getHyroAngleInRad()))
+				+ (str * Math.cos(getHyroAngleInRad()));
+		fwd = temp;
+		humanDrive(fwd, str, rot);
+	}
+	
+	public static void tankDrive(double left, double right) {
+		setAllLocation(0);
+		setDrivePower(right, left, right, left);
+	}
+	
+	/*
+	 * 
+	 * PID Stuff
+	 * 
+	 */
+	
 	@Override
 	public void pidWrite(double output) {
 		// TODO Auto-generated method stub
+		if(Math.abs(pidControllerRot.getError()) < Constants.DT_ROT_PID_IZONE) {
+			pidControllerRot.setPID(Constants.DT_ROT_PID_P, Constants.DT_ROT_PID_I, Constants.DT_ROT_PID_D);
+		} else {
+			pidControllerRot.setPID(Constants.DT_ROT_PID_P, 0, Constants.DT_ROT_PID_D);
+			pidControllerRot.enable();//Reset I?
+		}
 		swerveDrive(pidFWD, pidSTR, output);
 		//System.out.println(output);
 	}
