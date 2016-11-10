@@ -2,13 +2,17 @@ package org.usfirst.frc.team548.robot;
 
 import com.kauailabs.navx.frc.AHRS;
 
+import edu.wpi.first.wpilibj.PIDController;
+import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 
-public class DriveTrain {
+public class DriveTrain implements PIDOutput {
 
 	private static DriveTrain instance;
 	private static Module bigBird, bigHorse, bigGiraffe, bigSushi;
 	private static AHRS hyro;
+	private static PIDController pidControllerRot;
 
 	public static DriveTrain getInstance() {
 		if (instance == null)
@@ -27,6 +31,15 @@ public class DriveTrain {
 				Constants.DT_BS_TURN_TALON_ID, 4.20, 0.01, 0, 200); // Bottom left
 
 		hyro = new AHRS(SPI.Port.kMXP);
+		pidControllerRot = new PIDController(.01, 0.0001, 0.008, hyro, this);
+		pidControllerRot.setInputRange(-180.0f,  180.0f);
+		pidControllerRot.setOutputRange(-1.0, 1.0);
+		pidControllerRot.setContinuous(true);
+		 LiveWindow.addActuator("DriveSystem", "RotateController", pidControllerRot);
+	}
+	
+	public static AHRS getHyro() {
+		return hyro;
 	}
 
 	public static void setDrivePower(double bbPower, double bhPower,
@@ -69,10 +82,8 @@ public class DriveTrain {
 			.sqrt((l * l) + (w * w));
 
 	private static double lasta1 = 0, lasta2 = 0, lasta3 = 0, lasta4 = 0;
-	public static void humanDrive(double fwd, double str, double rot) {
-		if (Math.abs(rot) < 0.01)
-			rot = 0;
-		
+	
+	public static void swerveDrive(double fwd, double str, double rot) {
 		double a = str - (rot * (l / r));
 		double b = str + (rot * (l / r));
 		double c = fwd - (rot * (w / r));
@@ -98,15 +109,20 @@ public class DriveTrain {
 			ws3 /= max;
 			ws4 /= max;
 		}
+		DriveTrain.setDrivePower(ws4, ws2, ws1, ws3);
+		DriveTrain.setLocation(angleToLoc(wa4), angleToLoc(wa2), angleToLoc(wa1), angleToLoc(wa3));
+	}
+	
+	public static void humanDrive(double fwd, double str, double rot) {
+		if (Math.abs(rot) < 0.01) rot = 0;
 		
 		if (Math.abs(fwd) < .15 && Math.abs(str) < .15 && Math.abs(rot) < 0.01) {
-			setOffSets();
+			//setOffSets();
+			setDriveBreakMode(true);
 			stopDrive();
 		} else {
-			resetOffSet();
-			DriveTrain.setDrivePower(ws4, ws2, ws1, ws3);
-			DriveTrain.setLocation(angleToLoc(wa4), angleToLoc(wa2),
-					angleToLoc(wa1), angleToLoc(wa3));
+			setDriveBreakMode(false);
+			swerveDrive(fwd, str, rot);
 		}
 		
 		
@@ -114,6 +130,28 @@ public class DriveTrain {
 //		SmartDashboard.putNumber("Wheel Angle", wa1);
 //		SmartDashboard.putNumber("Wheel Speed", ws1);
 
+	}
+	
+	public static void pidDrive(double fwd, double str, double angle) {
+		double temp = (fwd * Math.cos(getHyroAngleInRad()))
+				+ (str * Math.sin(getHyroAngleInRad()));
+		str = (-fwd * Math.sin(getHyroAngleInRad()))
+				+ (str * Math.cos(getHyroAngleInRad()));
+		fwd = temp;
+		if(!pidControllerRot.isEnabled()) pidControllerRot.enable();
+		if (Math.abs(fwd) < .15 && Math.abs(str) < .15) {
+			//setOffSets();
+			setDriveBreakMode(true);
+			//stopDrive();
+			pidFWD = 0;
+			pidSTR = 0;
+		} else {
+			setDriveBreakMode(false);
+			//swerveDrive(fwd, str, rotPID);
+			pidFWD = fwd;
+			pidSTR = str;
+		}
+		pidControllerRot.setSetpoint(angle);
 	}
 
 	public static void fieldCentricDrive(double fwd, double str, double rot) {
@@ -179,22 +217,28 @@ public class DriveTrain {
 				bgOff = absToLoc(DriveTrain.bigGiraffe.getAbsPos());
 				bsOff = absToLoc(DriveTrain.bigSushi.getAbsPos());
 				
-				System.out.println("BBoff: " + bbOff);
+				System.out.println("BBoff: " +	bbOff);
 				System.out.println("BHoff: " + bhOff);
 				System.out.println("BGoff: " + bgOff);
 				System.out.println("BSoff: " + bsOff);
 				
 				changeAllToQual();
-				
+				//resetAllEnc();
 				bigBird.setEncPos((int) (weirdSub(bbOff, Constants.DT_BB_ABS_ZERO) * 4095d));
 				bigHorse.setEncPos((int) (weirdSub(bhOff, Constants.DT_BH_ABS_ZERO) * 4095d));
 				bigGiraffe.setEncPos((int) (weirdSub(bgOff, Constants.DT_BG_ABS_ZERO) * 4095d));
 				bigSushi.setEncPos((int) (weirdSub(bsOff, Constants.DT_BS_ABS_ZERO) * 4095d));
 				offSetSet = true;
+				
 			} else {
 				System.out.println("ERROR IN OFFSETS");
 			}
 		} 
+	}
+	
+	public static void tankDrive(double left, double right) {
+		setAllLocation(0);
+		setDrivePower(right, left, right, left);
 	}
 	
 	private static double absToLoc(double v) {
@@ -238,4 +282,24 @@ public class DriveTrain {
 	public static double getHyroAngleInRad() {
 		return hyro.getAngle() * (Math.PI / 180d);
 	}
+	
+	public static void setDriveBreakMode(boolean b) {
+		bigBird.setBreakMode(b);
+		bigHorse.setBreakMode(b);
+		bigGiraffe.setBreakMode(b);
+		bigSushi.setBreakMode(b);
+	}
+	
+	public static double getAverageError() {
+		return (Math.abs(bigBird.getError())+Math.abs(bigHorse.getError())+Math.abs(bigGiraffe.getError())+Math.abs(bigSushi.getError()))/4d;
+	}
+
+	@Override
+	public void pidWrite(double output) {
+		// TODO Auto-generated method stub
+		swerveDrive(pidFWD, pidSTR, output);
+		//System.out.println(output);
+	}
+	
+	private static volatile double pidFWD = 0, pidSTR = 0;
 }

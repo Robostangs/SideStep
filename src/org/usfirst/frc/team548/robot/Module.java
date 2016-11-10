@@ -31,7 +31,6 @@ public class Module {
 		turn.reverseOutput(false);
 		turn.setPID(TURN_P, TURN_I, TURN_D);
 		turn.setIZone(TURN_IZONE);
-		
 	}
 	
 	/**
@@ -134,6 +133,10 @@ public class Module {
 	}
 	
 	
+	public double getError() {
+		return turn.getError();
+	}
+	
 	public void stopBoth() {
 		setDrivePower(0);
 		setTurnPower(0);
@@ -151,5 +154,8 @@ public class Module {
 		turn.setFeedbackDevice(FeedbackDevice.CtreMagEncoder_Absolute);
 	}
 	
+	public void setBreakMode(boolean b) {
+		drive.enableBrakeMode(b);
+	}
 	
 }
