@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Robot extends IterativeRobot {
 
 	private XboxController xbox;
-	private boolean fun = true;
 	private DriverStation dt;
     public void robotInit() {
       xbox = new XboxController(Constants.XBOX_PORT);
