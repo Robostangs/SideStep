@@ -28,16 +28,19 @@ public class DriveTrain implements PIDOutput {
 		bigGiraffe = new Module(Constants.DT_BG_DRIVE_TALON_ID,
 				Constants.DT_BG_TURN_TALON_ID, 4.20, 0.01, 0, 200); // Top right
 		bigSushi = new Module(Constants.DT_BS_DRIVE_TALON_ID,
-				Constants.DT_BS_TURN_TALON_ID, 4.20, 0.01, 0, 200); // Bottom left
-
+				Constants.DT_BS_TURN_TALON_ID, 4.20, 0.01, 0, 200); // Bottom
+																	// left
 		hyro = new AHRS(SPI.Port.kMXP);
-		pidControllerRot = new PIDController(Constants.DT_ROT_PID_P, Constants.DT_ROT_PID_I, Constants.DT_ROT_PID_D, hyro, this);
-		pidControllerRot.setInputRange(-180.0f,  180.0f);
+		//PID is for PID drive not for the modules
+		pidControllerRot = new PIDController(Constants.DT_ROT_PID_P,
+				Constants.DT_ROT_PID_I, Constants.DT_ROT_PID_D, hyro, this);
+		pidControllerRot.setInputRange(-180.0f, 180.0f);
 		pidControllerRot.setOutputRange(-1.0, 1.0);
 		pidControllerRot.setContinuous(true);
-		 LiveWindow.addActuator("DriveSystem", "RotateController", pidControllerRot);
+		LiveWindow.addActuator("DriveSystem", "RotateController",
+				pidControllerRot);
 	}
-	
+
 	public static AHRS getHyro() {
 		return hyro;
 	}
@@ -81,7 +84,6 @@ public class DriveTrain implements PIDOutput {
 	private static final double l = 21, w = 21, r = Math
 			.sqrt((l * l) + (w * w));
 
-
 	public static boolean isBigBirdTurnEncConnected() {
 		return bigBird.isTurnEncConnected();
 	}
@@ -123,66 +125,37 @@ public class DriveTrain implements PIDOutput {
 	private static boolean offSetSet = false;
 
 	public static void setOffSets() {
-		if(!offSetSet) {
+		if (!offSetSet) {
 			double bbOff = 0, bhOff = 0, bgOff = 0, bsOff = 0;
 			bigBird.setTurnPower(0);
 			bigGiraffe.setTurnPower(0);
 			bigHorse.setTurnPower(0);
 			bigSushi.setTurnPower(0);
-			changeAllToAbs();
-			if (DriveTrain.bigBird.getAbsPos() != 0 && DriveTrain.bigHorse.getAbsPos() != 0 && DriveTrain.bigGiraffe.getAbsPos() != 0 && DriveTrain.bigSushi.getAbsPos() != 0) {
-				bbOff = absToLoc(DriveTrain.bigBird.getAbsPos());
-				bhOff = absToLoc(DriveTrain.bigHorse.getAbsPos());
-				bgOff = absToLoc(DriveTrain.bigGiraffe.getAbsPos());
-				bsOff = absToLoc(DriveTrain.bigSushi.getAbsPos());
-				
-				System.out.println("BBoff: " +	bbOff);
-				System.out.println("BHoff: " + bhOff);
-				System.out.println("BGoff: " + bgOff);
-				System.out.println("BSoff: " + bsOff);
-				
-				changeAllToQual();
-				//resetAllEnc();
-				bigBird.setEncPos((int) (weirdSub(bbOff, Constants.DT_BB_ABS_ZERO) * 4095d));
-				bigHorse.setEncPos((int) (weirdSub(bhOff, Constants.DT_BH_ABS_ZERO) * 4095d));
-				bigGiraffe.setEncPos((int) (weirdSub(bgOff, Constants.DT_BG_ABS_ZERO) * 4095d));
-				bigSushi.setEncPos((int) (weirdSub(bsOff, Constants.DT_BS_ABS_ZERO) * 4095d));
-				offSetSet = true;
-				
-			} else {
-				System.out.println("ERROR IN OFFSETS");
-			}
-		} 
-	}
-	
-	
-	private static double absToLoc(double v) {
-		if(v > 0) {
-			return v-((int)v);
-		} else {
-			return Math.abs((((int)v)-1d) - v); 
+
+			bbOff = DriveTrain.bigBird.getAbsPos();
+			bhOff = DriveTrain.bigHorse.getAbsPos();
+			bgOff = DriveTrain.bigGiraffe.getAbsPos();
+			bsOff = DriveTrain.bigSushi.getAbsPos();
+
+			System.out.println("BBoff: " + bbOff);
+			System.out.println("BHoff: " + bhOff);
+			System.out.println("BGoff: " + bgOff);
+			System.out.println("BSoff: " + bsOff);
+
+			resetAllEnc();
+			bigBird.setEncPos((int) (locSub(bbOff, Constants.DT_BB_ABS_ZERO) * 4095d));
+			bigHorse.setEncPos((int) (locSub(bhOff, Constants.DT_BH_ABS_ZERO) * 4095d));
+			bigGiraffe.setEncPos((int) (locSub(bgOff,Constants.DT_BG_ABS_ZERO) * 4095d));
+			bigSushi.setEncPos((int) (locSub(bsOff, Constants.DT_BS_ABS_ZERO) * 4095d));
+			offSetSet = true;
 		}
 	}
-	
+
 	public static void resetOffSet() {
 		offSetSet = false;
 	}
 
-	public static void changeAllToQual() {
-		bigBird.setFeedBackToQual();
-		bigHorse.setFeedBackToQual();
-		bigGiraffe.setFeedBackToQual();
-		bigSushi.setFeedBackToQual();
-	}
-	
-	public static void changeAllToAbs() {
-		bigBird.setFeedBackToAbs();
-		bigHorse.setFeedBackToAbs();
-		bigGiraffe.setFeedBackToAbs();
-		bigSushi.setFeedBackToAbs();
-	}
-
-	private static double weirdSub(double v, double c) {
+	private static double locSub(double v, double c) {
 		if (v - c > 0) {
 			return v - c;
 		} else {
@@ -197,22 +170,23 @@ public class DriveTrain implements PIDOutput {
 	public static double getHyroAngleInRad() {
 		return hyro.getAngle() * (Math.PI / 180d);
 	}
-	
+
 	public static void setDriveBreakMode(boolean b) {
 		bigBird.setBreakMode(b);
 		bigHorse.setBreakMode(b);
 		bigGiraffe.setBreakMode(b);
 		bigSushi.setBreakMode(b);
 	}
-	
+
 	public static double getAverageError() {
-		return (Math.abs(bigBird.getError())+Math.abs(bigHorse.getError())+Math.abs(bigGiraffe.getError())+Math.abs(bigSushi.getError()))/4d;
+		return (Math.abs(bigBird.getError()) + Math.abs(bigHorse.getError())
+				+ Math.abs(bigGiraffe.getError()) + Math.abs(bigSushi
+				.getError())) / 4d;
 	}
 
 	/*
 	 * 
 	 * Drive methods
-	 * 
 	 */
 	public static void swerveDrive(double fwd, double str, double rot) {
 		double a = str - (rot * (l / r));
@@ -241,45 +215,38 @@ public class DriveTrain implements PIDOutput {
 			ws4 /= max;
 		}
 		DriveTrain.setDrivePower(ws4, ws2, ws1, ws3);
-		DriveTrain.setLocation(angleToLoc(wa4), angleToLoc(wa2), angleToLoc(wa1), angleToLoc(wa3));
+		DriveTrain.setLocation(angleToLoc(wa4), angleToLoc(wa2),
+				angleToLoc(wa1), angleToLoc(wa3));
 	}
-	
+
 	public static void humanDrive(double fwd, double str, double rot) {
-		if (Math.abs(rot) < 0.01) rot = 0;
-		
+		if (Math.abs(rot) < 0.01)
+			rot = 0;
+
 		if (Math.abs(fwd) < .15 && Math.abs(str) < .15 && Math.abs(rot) < 0.01) {
-			//setOffSets();
+			// setOffSets();
 			setDriveBreakMode(true);
 			stopDrive();
 		} else {
 			setDriveBreakMode(false);
 			swerveDrive(fwd, str, rot);
+			// resetOffSet();
 		}
-		
-		
-//		SmartDashboard.putNumber("Wheel loc", angleToLoc(wa1));
-//		SmartDashboard.putNumber("Wheel Angle", wa1);
-//		SmartDashboard.putNumber("Wheel Speed", ws1);
-
 	}
-	
-		
+
 	public static void pidDrive(double fwd, double str, double angle) {
 		double temp = (fwd * Math.cos(getHyroAngleInRad()))
 				+ (str * Math.sin(getHyroAngleInRad()));
 		str = (-fwd * Math.sin(getHyroAngleInRad()))
 				+ (str * Math.cos(getHyroAngleInRad()));
 		fwd = temp;
-		if(!pidControllerRot.isEnabled()) pidControllerRot.enable();
+		if (!pidControllerRot.isEnabled())
+			pidControllerRot.enable();
 		if (Math.abs(fwd) < .15 && Math.abs(str) < .15) {
-			//setOffSets();
-			//setDriveBreakMode(true);
-			//stopDrive();
 			pidFWD = 0;
 			pidSTR = 0;
 		} else {
 			setDriveBreakMode(false);
-			//swerveDrive(fwd, str, rotPID);
 			pidFWD = fwd;
 			pidSTR = str;
 		}
@@ -294,30 +261,34 @@ public class DriveTrain implements PIDOutput {
 		fwd = temp;
 		humanDrive(fwd, str, rot);
 	}
-	
+
 	public static void tankDrive(double left, double right) {
 		setAllLocation(0);
 		setDrivePower(right, left, right, left);
 	}
-	
+
 	/*
 	 * 
 	 * PID Stuff
-	 * 
 	 */
-	
+
 	@Override
 	public void pidWrite(double output) {
-		// TODO Auto-generated method stub
-		if(Math.abs(pidControllerRot.getError()) < Constants.DT_ROT_PID_IZONE) {
-			pidControllerRot.setPID(Constants.DT_ROT_PID_P, Constants.DT_ROT_PID_I, Constants.DT_ROT_PID_D);
+		if (Math.abs(pidControllerRot.getError()) < Constants.DT_ROT_PID_IZONE) {
+			pidControllerRot.setPID(Constants.DT_ROT_PID_P,
+					Constants.DT_ROT_PID_I, Constants.DT_ROT_PID_D);
 		} else {
-			pidControllerRot.setPID(Constants.DT_ROT_PID_P, 0, Constants.DT_ROT_PID_D);
-			pidControllerRot.enable();//Reset I?
+			// I Zone
+			pidControllerRot.setPID(Constants.DT_ROT_PID_P, 0,
+					Constants.DT_ROT_PID_D);
+			pidControllerRot.setContinuous(true);
 		}
 		swerveDrive(pidFWD, pidSTR, output);
-		//System.out.println(output);
 	}
-	
+
+	public static void disablePID() {
+		pidControllerRot.disable();
+	}
+
 	private static volatile double pidFWD = 0, pidSTR = 0;
 }

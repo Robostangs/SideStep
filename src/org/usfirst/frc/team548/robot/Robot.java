@@ -21,39 +21,38 @@ public class Robot extends IterativeRobot {
     public void autonomousInit() {
 
     }
-
+    
     public void autonomousPeriodic() {
     	DriveTrain.setAllLocation(0);
-    	DriveTrain.stopDrive();
     }
     
-   
+    public void disabledInit() {
+    	DriveTrain.resetOffSet();
+    }
     public void disabledPeriodic() {
     	DriveTrain.setOffSets();
     	xbox.setRightRumble(0);
     	xbox.setLeftRumble(0);
+    	DriveTrain.disablePID();
     }
   
     public void teleopPeriodic() {    	
-    	 //DriveTrain.fieldCentricDrive(xbox.getLeftStickYAxis(), xbox.getLeftStickXAxis(), powTwoThing(xbox.getRightStickXAxis()));
-    	DriveTrain.pidDrive(xbox.getLeftStickYAxis(), xbox.getLeftStickXAxis(), changeAngle(xbox.getRightStickXAxis(), xbox.getRightStickYAxis()));
+    	 DriveTrain.fieldCentricDrive(xbox.getLeftStickYAxis(), xbox.getLeftStickXAxis(), powTwoThing(xbox.getRightStickXAxis()));
+    	//DriveTrain.pidDrive(xbox.getLeftStickYAxis(), xbox.getLeftStickXAxis(), changeAngle(xbox.getRightStickXAxis(), xbox.getRightStickYAxis()));
     	// DriveTrain.tankDrive(xbox.getLeftStickYAxis(), xbox.getRightStickYAxis());
     	//DriveTrain.humanDrive(xbox.getLeftStickYAxis(), xbox.getLeftStickXAxis(), Math.pow(xbox.getRightStickXAxis(), 3));
-    	SmartDashboard.putBoolean("Big Bird Turn Encoder", DriveTrain.isBigBirdTurnEncConnected());
+    	
+    	 SmartDashboard.putBoolean("Big Bird Turn Encoder", DriveTrain.isBigBirdTurnEncConnected());
     	SmartDashboard.putBoolean("Big Horse Turn Encoder", DriveTrain.isBigHorseTurnEncConnected());
     	SmartDashboard.putBoolean("Big Giraffe Turn Encoder", DriveTrain.isBigGiraffeTurnEncConnected());
     	SmartDashboard.putBoolean("Big Sushi Turn Encoder", DriveTrain.isBigSushiTurnEncConnected());
-    	//SmartDashboard.putNumber("KEY", DriveTrain.bigSushi.getTurnEncPos());
     	SmartDashboard.putNumber("Hyro", DriveTrain.getHyroAngle());
     	SmartDashboard.putNumber("Avg. Error", DriveTrain.getAverageError());
     	xbox.setRightRumble(Math.pow(DriveTrain.getAverageError()/1300d, 2));
     	xbox.setLeftRumble((dt.isBrownedOut() ? 1 : 0));
-    
-    	//DriveTrain.resetOffSet();
     }
     
     public void testPeriodic() {
-    	//DriveTrain.resetAllEnc();
     	LiveWindow.addSensor("DriveSystem", "Hyro", DriveTrain.getHyro());
     }
     
@@ -63,11 +62,13 @@ public class Robot extends IterativeRobot {
     	return (v > 0 ) ? Math.pow(v, 2) : -Math.pow(v, 2);
     }
     
+    double lastAngle = 0;
     public double changeAngle(double x, double y) {
-    	if (Math.sqrt((x*x)+(y*y)) > .5) {
-			return Math.atan2(x, y)*(180d/Math.PI);
+    	if (Math.sqrt((x*x)+(y*y)) > .25) {
+    		lastAngle = Math.atan2(x, y)*(180d/Math.PI);
+			return lastAngle;
 		} else {
-			return 0;
+			return lastAngle;
 		}
     }
     

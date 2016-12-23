@@ -23,7 +23,7 @@ public class Module {
 	public Module(int driveTalonID, int turnTalonID, double tP, double tI, double tD, int tIZone) {
 		drive = new CANTalon(driveTalonID);
 		turn = new CANTalon(turnTalonID);
-		turn.setFeedbackDevice(FeedbackDevice.CtreMagEncoder_Absolute);
+		turn.setFeedbackDevice(FeedbackDevice.QuadEncoder);
 		TURN_P = tP;
 		TURN_I = tI;
 		TURN_D = tD;
@@ -57,16 +57,20 @@ public class Module {
 	public double getTurnEncPos() {
 		return turn.getEncPosition();
 	}
-	
+
+	/**
+	 * Thank you CD ozrien for this!!!
+	 * @return
+	 */
 	public double getAbsPos() {
-		return turn.getPosition();
+		return (turn.getPulseWidthPosition() & 0xFFF)/4095d;
 	}
 
 	/**
 	 * Lets reset the turn encoder position to 0
 	 */
 	public void restTurnEnc() {
-		this.turn.setPosition(0);
+		this.turn.setEncPosition(0);
 	}
 
 	
@@ -78,7 +82,7 @@ public class Module {
 	 * @return true if the encoder is connected
 	 */
 	public boolean isTurnEncConnected() {
-		return turn.isSensorPresent(FeedbackDevice.CtreMagEncoder_Absolute) == FeedbackDeviceStatus.FeedbackStatusPresent;
+		return turn.isSensorPresent(FeedbackDevice.CtreMagEncoder_Relative) == FeedbackDeviceStatus.FeedbackStatusPresent;
 	}
 	
 	public int getTurnRotations() {
@@ -102,8 +106,6 @@ public class Module {
 	 * @param setLoc location to set to
 	 */	
 	public void setTurnLocation(double loc) {
-		//loc = 1-loc;
-		//turn.setFeedbackDevice(FeedbackDevice.QuadEncoder);
 		turn.changeControlMode(TalonControlMode.Position);
 		double base = getTurnRotations() * FULL_ROTATION;
 		if (getTurnEncPos() >= 0) {
@@ -113,23 +115,14 @@ public class Module {
 				base -= FULL_ROTATION;
 			}
 			turn.set((((loc * FULL_ROTATION) + (base))));
-			//SmartDashboard.putNumber("Error", (base + (loc * FULL_ROTATION))- getTurnEncPos());
-			
 		} else {
 			if ((base - ((1-loc) * FULL_ROTATION)) - getTurnEncPos() < -FULL_ROTATION/2) {
 				base += FULL_ROTATION;
 			} else if ((base -((1-loc) * FULL_ROTATION)) - getTurnEncPos() > FULL_ROTATION/2) {
 				base -= FULL_ROTATION;
 			}
-			turn.set((base- (((1-loc) * FULL_ROTATION))));
-			//SmartDashboard.putNumber("Error", (base - ((1-loc) * FULL_ROTATION))- getTurnEncPos());
-			
+			turn.set((base- (((1-loc) * FULL_ROTATION))));	
 		}
-		
-		//SmartDashboard.putNumber("Set", turn.getSetpoint());
-		//SmartDashboard.putNumber("Base", base);
-
-		
 	}
 	
 	
@@ -146,16 +139,10 @@ public class Module {
 		setDrivePower(0);
 	}
 	
-	public void setFeedBackToQual() {
-		turn.setFeedbackDevice(FeedbackDevice.QuadEncoder);
-	}
-	
-	public void setFeedBackToAbs() {
-		turn.setFeedbackDevice(FeedbackDevice.CtreMagEncoder_Absolute);
-	}
-	
 	public void setBreakMode(boolean b) {
 		drive.enableBrakeMode(b);
 	}
+	
+	
 	
 }
